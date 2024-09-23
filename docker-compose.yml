@@ -1,0 +1,41 @@
+services:
+  # osrm-preprocess:
+  #   image: ghcr.io/project-osrm/osrm-backend:v5.27.0
+  #   container_name: osrm-preprocess
+  #   command: >
+  #     bash -c "
+  #     osrm-extract -p /opt/car.lua /data/map.pbf &&
+  #     osrm-partition /data/map.osrm &&
+  #     osrm-customize /data/map.osrm
+  #     "
+  #   volumes:
+  #     - ./osrm-data:/data
+  #   environment:
+  #     OSRM_PORT: 5000
+
+  osrm-backend:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.0
+    container_name: osrm-backend
+    command: >
+      osrm-routed --algorithm mld /data/map.osrm
+    volumes: 
+      - ./osrm-data:/data
+    environment:
+      OSRM_PORT: 5000
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  osrm-frontend:
+    image: osrm/osrm-frontend
+    container_name: osrm-frontend
+    environment:
+      OSRM_BACKEND: "http://osrm-backend:5000"
+    ports:
+      - "9966:9966"
+    depends_on:
+      - osrm-backend
