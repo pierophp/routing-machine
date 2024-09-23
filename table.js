@@ -29,7 +29,7 @@ async function run() {
   const response = await fetch(url);
   const data = await response.json();
 
-  await writeFile("data.json", JSON.stringify(data, null, 2));
+  await writeFile("table.json", JSON.stringify(data, null, 2));
 }
 
 run();
